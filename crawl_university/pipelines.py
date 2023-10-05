@@ -7,7 +7,7 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
-
+import json
 
 class CrawlUniversityPipeline:
     def process_item(self, item, spider):
@@ -25,3 +25,4 @@ class DuplicatesPipeline:
         else:
             self.names_seen.add(adapter['name'])
             return item
+        
