@@ -16,7 +16,7 @@ class ItemspiderSpider(scrapy.Spider):
         for product in products:
             # Truy xuất các thông tin bài viết
             title = product.css('h2.title::text').get()
-            content = product.css('p::text').getall()
+            content = product.css('::text').getall()
             image_url = product.css('img::attr(src)').extract_first()
 
             # Loại bỏ các chuỗi rỗng (khoảng trắng) trong nội dung
