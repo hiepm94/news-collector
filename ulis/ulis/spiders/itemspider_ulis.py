@@ -2,7 +2,7 @@ import scrapy
 import json
 
 class ItemspiderSpider(scrapy.Spider):
-    name = "itemspider"
+    name = "itemspider_ulis"
     start_urls = []
 
     def __init__(self, *args, **kwargs):

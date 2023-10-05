@@ -4,7 +4,8 @@ import scrapy
 class LinkspiderSpider(scrapy.Spider):
     name = "linkspider"
     allowed_domains = ["ulis.vnu.edu.vn"]
-    start_urls = ["https://ulis.vnu.edu.vn/category/tin-tuc-va-su-kien/"]
+    start_urls = ["https://ulis.vnu.edu.vn/category/tin-tuc-va-su-kien/",
+                  "https://ulis.vnu.edu.vn/category/tin-tuc-va-su-kien/page/2/"]
 
     def parse(self, response):
         links = response.css('h2.title a::attr(href)').getall()
