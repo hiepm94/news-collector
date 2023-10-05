@@ -12,17 +12,14 @@ class UlisitemSpider(scrapy.Spider):
             self.start_urls = [item['link'] for item in data]
 
     def parse(self, response):
-        # Sử dụng CSS selector để lấy tiêu đề và nội dung
-        titles = response.css('h2.title::text').getall()
-        content = response.css('div.single-content::text').getall()
-        
-        articles = []
+        products = response.css('.post-content')
+        for product in products:
+            # Truy xuất các thông tin bài viết
+            title = product.css('h2.title::text').get()
+            content = product.css('p::text').getall()
 
-        # Lặp qua các tiêu đề và nội dung để tạo danh sách bài báo
-        for title, paragraph in zip(titles, content):
-            article = {"title": title.strip(), "content": paragraph.strip()}
-            articles.append(article)
-
-        # Trả về từng bài báo dưới dạng danh sách động
-        for article in articles:
-            yield article
+            # Trả về dữ liệu
+            yield {
+                'title': title,
+                'content': content,
+            }
