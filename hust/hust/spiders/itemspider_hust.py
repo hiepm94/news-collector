@@ -16,16 +16,20 @@ class ItemspiderHustSpider(scrapy.Spider):
         for product in products:
             # Truy xuất các thông tin bài viết
             title = product.css('.title::text').get()
-            content = product.css('#news-bodyhtml::text').getall()
+            content = product.css('::text').getall()
             image_url = product.css('img::attr(src)').extract_first()
 
             # Loại bỏ các chuỗi rỗng (khoảng trắng) trong nội dung
             cleaned_content = [text.strip() for text in content if text.strip()]
 
+            # Lấy URL hiện tại
+            current_url = response.url
 
-            # Trả về dữ liệu
-            yield {
-                'title': title,
-                'content': cleaned_content,
-                'image_url' : image_url,
-            }
+            # Kiểm tra nếu title và image_url khác null thì mới trả về dữ liệu
+            if title is not None or image_url is not None:
+                yield {
+                    'title': title,
+                    'content': cleaned_content,
+                    'image_url': image_url,
+                    'current_url': current_url,  # Thêm đường dẫn vào dữ liệu
+                }
