@@ -22,12 +22,15 @@ class ItemspiderSpider(scrapy.Spider):
             # Loại bỏ các chuỗi rỗng (khoảng trắng) trong nội dung
             cleaned_content = [text.strip() for text in content if text.strip()]
 
+            # Lấy URL hiện tại
+            news_url = response.url
 
             # Trả về dữ liệu
             yield {
                 'title': title,
                 'content': cleaned_content,
                 'image_url' : image_url,
+                'news_url': news_url,  # Thêm đường dẫn vào dữ liệu
             }
 
     # # Đọc dữ liệu từ tệp JSON
