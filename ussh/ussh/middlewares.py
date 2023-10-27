@@ -8,7 +8,9 @@ from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
-
+from scrapy.exceptions import IgnoreRequest
+from twisted.internet import defer
+from twisted.internet.error import TimeoutError
 class UsshSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
@@ -101,3 +103,42 @@ class UsshDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+class RetryMiddleware:
+    def __init__(self, settings):
+        self.retry_http_codes = set(int(x) for x in settings.getlist('RETRY_HTTP_CODES'))
+        self.retry_delay = settings.getfloat('RETRY_DELAY')
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler.settings)
+
+    def process_response(self, request, response, spider):
+        if response.status in self.retry_http_codes:
+            retry_after = response.headers.get('Retry-After')
+            if retry_after:
+                retry_after = int(retry_after)
+            else:
+                retry_after = self.retry_delay
+
+            defer.returnValue(self._retry(request, spider, retry_after))
+        return response
+
+    def _retry(self, request, spider, retry_after):
+        if isinstance(retry_after, int):
+            retry_after += 1  # Add an extra second for safety
+            return defer.Deferred().addCallback(self._do_retry, request, spider).addErrback(self._on_retry_err, request, spider).addCallback(self._retry, spider, retry_after)
+        else:
+            raise IgnoreRequest()
+
+    def _do_retry(self, _, request, spider):
+        spider.logger.info(f"Retrying request: {request.url}")
+        return request
+
+    def _on_retry_err(self, failure, request, spider):
+        if failure.check(TimeoutError):
+            spider.logger.info(f"Retrying request: {request.url} after timeout error")
+            return request
+        else:
+            spider.logger.error(f"Failed to retry request: {request.url}. Error: {failure.value}")

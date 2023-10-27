@@ -11,7 +11,7 @@ class ItemspiderHustSpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(ItemspiderHustSpider, self).__init__(*args, **kwargs)
-        with open('hustlink.json', 'r') as f:
+        with open('linkitem.json', 'r') as f:
             data = json.load(f)
             self.start_urls = [item['link'] for item in data][:50]
 
@@ -39,4 +39,5 @@ class ItemspiderHustSpider(scrapy.Spider):
             'content': cleaned_content,
             'image_url': image_url,
             'news_url': news_url,
+            'publication' : "hust",
         }

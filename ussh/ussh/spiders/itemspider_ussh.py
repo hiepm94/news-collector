@@ -1,39 +1,40 @@
-import scrapy
 import json
+import re
+import dateparser
+import scrapy
+from scrapy.http import TextResponse
 
 class ItemspiderUsshSpider(scrapy.Spider):
     name = "itemspider_ussh"
-    start_urls = []
+    allowed_domains = ['ussh.vnu.edu.vn']
 
     def __init__(self, *args, **kwargs):
         super(ItemspiderUsshSpider, self).__init__(*args, **kwargs)
         with open('usshlink.json', 'r') as f:
             data = json.load(f)
-            self.start_urls = [item['link'] for item in data]
+            self.start_urls = [item['link'] for item in data][:50]
 
     def parse(self, response):
-        products = response.css('div.panel-body')
-        for product in products:
-            # Truy xuất các thông tin bài viết
-            title = product.css('.title::text').get()
-            content = product.css('::text').getall()
-            image_url = product.css('img::attr(src)').extract_first()
+        title = response.css('.title::text').get()
+        datetime_str = response.css('.h5::text').get()
+        datetime_obj = dateparser.parse(datetime_str, languages=['vi'])
+        content = response.css('div.news_column.panel.panel-default *::text').getall()
+        cleaned_content = [text.strip() for text in content if text.strip()]
+        cleaned_content = ' '.join(cleaned_content).strip()
+        cleaned_content = re.sub(r'https?://\S+', '', cleaned_content)
+        image_url = response.css('img.img-thumbnail::attr(src)').extract_first()
+        if image_url is None:
+            image_url = response.css('.news_column .image-center img::attr(src)').extract_first()
 
-            # Kiểm tra nếu đường dẫn không bắt đầu bằng "https://ussh.vnu.edu.vn"
-            if image_url and not image_url.startswith("https://ussh.vnu.edu.vn"):
-                # Nếu không, nối đường dẫn với "https://ussh.vnu.edu.vn"
-                image_url = "https://ussh.vnu.edu.vn" + image_url
+        if image_url and image_url.startswith('/uploads'):
+            image_url = "https://ussh.vnu.edu.vn" + image_url
+        news_url = response.url
 
-            # Loại bỏ các chuỗi rỗng (khoảng trắng) trong nội dung
-            cleaned_content = [text.strip() for text in content if text.strip()]        
-
-            # Lấy URL hiện tại
-            news_url = response.url
-
-            # Trả về dữ liệu
-            yield {
-                'title': title,
-                'content': cleaned_content,
-                'image_url': image_url,
-                'news_url': news_url,  # Thêm đường dẫn vào dữ liệu
-            }
+        yield {
+            'title': title,
+            'date': datetime_obj,
+            'content': cleaned_content,
+            'image_url': image_url,
+            'news_url': news_url,
+            'publication': "ussh",
+        }

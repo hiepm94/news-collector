@@ -7,13 +7,11 @@ class LinkspiderNeuSpider(scrapy.Spider):
     start_urls = ["https://neu.edu.vn/vi/tin-tuc-moi-nhat"]
 
     def parse(self, response):
-        # Sử dụng CSS Selector để lấy tất cả các thẻ <article>
-        articles = response.css('div.articles article')
-
-        # Lặp qua các thẻ article và trích xuất liên kết
-        for article in articles:
-            link = article.css('a::attr(href)').extract_first()
-
+        links = response.css('div.article-content a::attr(href)').getall()
+        for link in links:
+            if link in self.visited_urls:
+                return
+            self.visited_urls.add(link)
             yield {
-                'link': link  # Trả về đường dẫn trong dạng một dictionary
+                'link': link
             }
