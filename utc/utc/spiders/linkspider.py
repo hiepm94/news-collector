@@ -4,7 +4,7 @@ import scrapy
 class LinkspiderSpider(scrapy.Spider):
     name = "linkspider_utc"
     allowed_domains = ["www.utc.edu.vn"]
-    start_urls = ["https://www.utc.edu.vn/tin-tuc"]
+    start_urls = ["https://ueb.vnu.edu.vn/Tin-Tuc/tin-tuc-chung"]
     visited_urls = set()
 
 

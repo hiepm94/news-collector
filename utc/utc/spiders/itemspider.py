@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 
 class ItemspiderSpider(scrapy.Spider):
     name = "itemspider"
-    allowed_domains = ["www.utc.edu.vn"]
+    allowed_domains = ["utc.edu.vn"]
     start_urls = []
 
     def __init__(self, *args, **kwargs):

@@ -4,17 +4,21 @@ from urllib.parse import urljoin
 class LinkspiderUebSpider(scrapy.Spider):
     name = "linkspider_ueb"
     allowed_domains = ["ueb.vnu.edu.vn"]
-    start_urls = ["https://ueb.vnu.edu.vn/Tin-Tuc/TIN-TUC-CHUNG/1659"]
+    start_urls = ["https://ueb.vnu.edu.vn/Tin-Tuc/TIN-TUC-CHUNG/1659", "https://ueb.vnu.edu.vn/Tin-Tuc/su-kien/1657"]
+    visited_urls = set()
+
 
     def parse(self, response):
         links = response.css('.mt-3 .font-weight-bold::attr(href)').getall()
 
-        # Kiểm tra và nối đường dẫn nếu chúng không bắt đầu bằng "https://ueb.vnu.edu.vn/"
-        links = [urljoin(response.url, link) if not link.startswith("https://ueb.vnu.edu.vn/") else link for link in links]
-
         for link in links:
+            if link in self.visited_urls:
+                return
+            self.visited_urls.add(link)
+            if not link.startswith("https://ueb.vnu.edu.vn"):
+                link = "https://ueb.vnu.edu.vn" + link
             yield {
-                'link': link  # Trả về đường link trong dạng một dictionary
+                'link': link
             }
 
         # next_page = response.css('a.next.page-numbers::attr(href)').get()
