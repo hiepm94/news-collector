@@ -1,7 +1,5 @@
 import scrapy
 
-
-
 class LinkspiderHauSpider(scrapy.Spider):
     name = "linkspider_hau"
     allowed_domains = ["hau.edu.vn"]
